@@ -8,9 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>    <div class="container mt-4">
-        <h1 class="text-center mb-4">ROGemPick Calculator</h1>
-          <div class="row mb-4">
-            <div class="col-md-4">
+        <h1 class="text-center mb-4">ROGemPick Calculator</h1>          <div class="row mb-4">
+            <div class="col-md-3">
                 <div class="form-group">
                     <label for="gloveType">Starting Glove:</label>
                     <select class="form-control" id="gloveType">
@@ -21,18 +20,25 @@
                     </select>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="form-group">
                     <label for="days">Days Playing Event:</label>
                     <input type="number" class="form-control" id="days" min="1" value="7">
                     <small class="text-muted">Enter the number of days you plan to play</small>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="form-group">
                     <label for="minesPerDay">Mines Per Day:</label>
                     <input type="number" class="form-control" id="minesPerDay" min="1" max="20" value="10">
                     <small class="text-muted">How many times you mine each day</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="maxQuota">Max Daily Quota:</label>
+                    <input type="number" class="form-control" id="maxQuota" min="0" value="0">
+                    <small class="text-muted">Max quota per day (0 = no limit)</small>
                 </div>
             </div>
         </div>
@@ -93,11 +99,14 @@
             </div>
             
             <div class="col-md-8">
-                <div class="card mb-4">
-                    <div class="card-header bg-success text-white">
+                <div class="card mb-4">                    <div class="card-header bg-success text-white">
                         Daily Progress
                     </div>
                     <div class="card-body">
+                        <div class="legend mb-3">
+                            <span class="legend-item"><span class="legend-color bg-success"></span> Upgrade Day</span>
+                            <span class="legend-item"><span class="legend-color bg-warning"></span> Quota Limit Reached</span>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-bordered">
                                 <thead>

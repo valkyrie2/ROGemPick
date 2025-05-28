@@ -64,6 +64,11 @@ h1 {
     background-color: rgba(40, 167, 69, 0.15) !important;
 }
 
+/* Table highlight for quota limit */
+.table-warning {
+    background-color: rgba(255, 193, 7, 0.15) !important;
+}
+
 /* Table responsive */
 .table-responsive {
     max-height: 400px;
@@ -151,6 +156,36 @@ footer {
 
 .card {
     animation: fadeIn 0.5s ease-out;
+}
+
+/* Legend styling */
+.legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #495057;
+}
+
+.legend-color {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    border-radius: 3px;
+}
+
+.bg-success {
+    background-color: rgba(40, 167, 69, 0.15) !important;
+}
+
+.bg-warning {
+    background-color: rgba(255, 193, 7, 0.15) !important;
 }
 
 /* Loading indicator */

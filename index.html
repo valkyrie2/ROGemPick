@@ -13,26 +13,25 @@
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="gemType">Gem Type:</label>
-                    <select class="form-control" id="gemType">
-                        <option value="level1">Level 1 Gem</option>
-                        <option value="level2">Level 2 Gem</option>
-                        <option value="level3">Level 3 Gem</option>
-                        <option value="level4">Level 4 Gem</option>
-                        <option value="level5">Level 5 Gem</option>
+                    <label for="gloveType">Starting Glove:</label>
+                    <select class="form-control" id="gloveType">
+                        <option value="Glove Pick I (Normal)">Glove Pick I (Normal)</option>
+                        <option value="Glove Pick II (Normal)">Glove Pick II (Normal)</option>
+                        <option value="Glove Pick I (Rare)">Glove Pick I (Rare)</option>
+                        <option value="Glove Pick II (Rare)">Glove Pick II (Rare)</option>
                     </select>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="quantity">Quantity (min 0):</label>
-                    <input type="number" class="form-control" id="quantity" min="0" value="0">
-                    <small class="text-muted">Bulk bonus applies at 10, 50, and 100 gems</small>
+                    <label for="days">Days Playing Event:</label>
+                    <input type="number" class="form-control" id="days" min="1" value="7">
+                    <small class="text-muted">Enter the number of days you plan to play</small>
                 </div>
             </div>
         </div>
 
-        <div class="row mb-3">
+        <div class="row mb-3"></div>
             <div class="col-12">
                 <button class="btn btn-primary" id="calculateBtn">Calculate</button>
             </div>
@@ -42,10 +41,10 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header bg-dark text-white">
-                        Gem Comparison Chart
+                        Daily Progress Chart
                     </div>
                     <div class="card-body">
-                        <canvas id="gemComparisonChart" width="400" height="200"></canvas>
+                        <canvas id="progressChart" width="400" height="200"></canvas>
                     </div>
                 </div>
             </div>
@@ -55,7 +54,7 @@
             <div class="col-md-4">
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white">
-                        Gem Stats
+                        Glove Stats
                     </div>
                     <div class="card-body">
                         <table class="table table-bordered">
@@ -65,18 +64,18 @@
                                     <th>Value</th>
                                 </tr>
                             </thead>
-                            <tbody id="gemStatsTable">
+                            <tbody id="gloveStatsTable">
                                 <tr>
-                                    <td>Base Power</td>
-                                    <td id="basePower">0</td>
+                                    <td>Start Glove</td>
+                                    <td id="startGlove">-</td>
                                 </tr>
                                 <tr>
-                                    <td>Multiplier</td>
-                                    <td id="multiplier">0</td>
+                                    <td>End Glove</td>
+                                    <td id="endGlove">-</td>
                                 </tr>
                                 <tr>
-                                    <td>Rarity</td>
-                                    <td id="rarity">-</td>
+                                    <td>Total Upgrades</td>
+                                    <td id="totalUpgrades">0</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -84,66 +83,28 @@
                 </div>
             </div>
             
-            <div class="col-md-4">
+            <div class="col-md-8">
                 <div class="card mb-4">
                     <div class="card-header bg-success text-white">
-                        Resource Requirements
+                        Daily Progress
                     </div>
                     <div class="card-body">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Resource</th>
-                                    <th>Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody id="resourceTable">
-                                <tr>
-                                    <td>Gold</td>
-                                    <td id="goldRequired">0</td>
-                                </tr>
-                                <tr>
-                                    <td>Dust</td>
-                                    <td id="dustRequired">0</td>
-                                </tr>
-                                <tr>
-                                    <td>Crystals</td>
-                                    <td id="crystalsRequired">0</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-header bg-warning text-dark">
-                        Total Output
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Metric</th>
-                                    <th>Value</th>
-                                </tr>
-                            </thead>
-                            <tbody id="outputTable">
-                                <tr>
-                                    <td>Total Power</td>
-                                    <td id="totalPower">0</td>
-                                </tr>
-                                <tr>
-                                    <td>Cost Efficiency</td>
-                                    <td id="costEfficiency">0</td>
-                                </tr>
-                                <tr>
-                                    <td>Time to Craft</td>
-                                    <td id="timeToCraft">0 min</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Day</th>
+                                        <th>Glove Type</th>
+                                        <th>Score Gained</th>
+                                        <th>Total Score</th>
+                                        <th>Deposit Zone</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="progressTable">
+                                    <!-- Will be filled by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,164 @@
+{
+    "Glove Pick I (Normal)": {
+        "ทั่วไป": {
+            "rate": 85,
+            "items": {
+                "Amethyst": 50, "Moonstone": 30, "Citrine": 20,
+                "Malachite": 50, "Aventurine": 30, "Peridot": 20,
+                "Carnelian": 50, "Garnet": 30, "Spinel": 20,
+                "Blue Apatite": 50, "Lapis Lazuli": 30, "Sapphire": 20
+            }
+        },
+        "หายาก": {
+            "rate": 14,
+            "items": {
+                "Fire Opal": 60, "Alexandrite": 40,
+                "Green Chrysoberyl": 60, "Tsavorite": 40,
+                "Red Zircon": 60, "Star Ruby": 40,
+                "Iolite": 60, "Blue Beryl": 40
+            }
+        },
+        "หายากมาก": {
+            "rate": 1,
+            "items": {
+                "Black Opal": 100, "Colombian Emerald": 100,
+                "Burmese Ruby": 100, "Kashmir Sapphire": 100
+            }
+        }
+    },
+    "Glove Pick II (Normal)": {
+        "ทั่วไป": {
+            "rate": 80,
+            "items": {
+                "Amethyst": 45, "Moonstone": 30, "Citrine": 25,
+                "Malachite": 45, "Aventurine": 30, "Peridot": 25,
+                "Carnelian": 45, "Garnet": 30, "Spinel": 25,
+                "Blue Apatite": 45, "Lapis Lazuli": 30, "Sapphire": 25
+            }
+        },
+        "หายาก": {
+            "rate": 19,
+            "items": {
+                "Fire Opal": 55, "Alexandrite": 45,
+                "Green Chrysoberyl": 55, "Tsavorite": 45,
+                "Red Zircon": 55, "Star Ruby": 45,
+                "Iolite": 55, "Blue Beryl": 45
+            }
+        },
+        "หายากมาก": {
+            "rate": 1,
+            "items": {
+                "Black Opal": 100, "Colombian Emerald": 100,
+                "Burmese Ruby": 100, "Kashmir Sapphire": 100
+            }
+        }
+    },
+    "Glove Pick I (Rare)": {
+        "ทั่วไป": {
+            "rate": 70,
+            "items": {
+                "Amethyst": 40, "Moonstone": 30, "Citrine": 30,
+                "Malachite": 40, "Aventurine": 30, "Peridot": 30,
+                "Carnelian": 40, "Garnet": 30, "Spinel": 30,
+                "Blue Apatite": 40, "Lapis Lazuli": 30, "Sapphire": 30
+            }
+        },
+        "หายาก": {
+            "rate": 27,
+            "items": {
+                "Fire Opal": 50, "Alexandrite": 50,
+                "Green Chrysoberyl": 50, "Tsavorite": 50,
+                "Red Zircon": 50, "Star Ruby": 50,
+                "Iolite": 50, "Blue Beryl": 50
+            }
+        },
+        "หายากมาก": {
+            "rate": 3,
+            "items": {
+                "Black Opal": 100, "Colombian Emerald": 100,
+                "Burmese Ruby": 100, "Kashmir Sapphire": 100
+            }
+        }
+    },
+    "Glove Pick II (Rare)": {
+        "ทั่วไป": {
+            "rate": 62,
+            "items": {
+                "Amethyst": 35, "Moonstone": 30, "Citrine": 35,
+                "Malachite": 35, "Aventurine": 30, "Peridot": 35,
+                "Carnelian": 35, "Garnet": 30, "Spinel": 35,
+                "Blue Apatite": 35, "Lapis Lazuli": 30, "Sapphire": 35
+            }
+        },
+        "หายาก": {
+            "rate": 35,
+            "items": {
+                "Fire Opal": 45, "Alexandrite": 55,
+                "Green Chrysoberyl": 45, "Tsavorite": 55,
+                "Red Zircon": 45, "Star Ruby": 55,
+                "Iolite": 45, "Blue Beryl": 55
+            }
+        },
+        "หายากมาก": {
+            "rate": 3,
+            "items": {
+                "Black Opal": 100, "Colombian Emerald": 100,
+                "Burmese Ruby": 100, "Kashmir Sapphire": 100
+            }
+        }
+    },
+    "Glove Pick I (Ultra Rare)": {
+        "ทั่วไป": {
+            "rate": 49,
+            "items": {
+                "Amethyst": 30, "Moonstone": 30, "Citrine": 40,
+                "Malachite": 30, "Aventurine": 30, "Peridot": 40,
+                "Carnelian": 30, "Garnet": 30, "Spinel": 40,
+                "Blue Apatite": 30, "Lapis Lazuli": 30, "Sapphire": 40
+            }
+        },
+        "หายาก": {
+            "rate": 45,
+            "items": {
+                "Fire Opal": 40, "Alexandrite": 60,
+                "Green Chrysoberyl": 40, "Tsavorite": 60,
+                "Red Zircon": 40, "Star Ruby": 60,
+                "Iolite": 40, "Blue Beryl": 60
+            }
+        },
+        "หายากมาก": {
+            "rate": 6,
+            "items": {
+                "Black Opal": 100, "Colombian Emerald": 100,
+                "Burmese Ruby": 100, "Kashmir Sapphire": 100
+            }
+        }
+    },
+    "Glove Pick II (Ultra Rare)": {
+        "ทั่วไป": {
+            "rate": 40,
+            "items": {
+                "Amethyst": 25, "Moonstone": 30, "Citrine": 45,
+                "Malachite": 25, "Aventurine": 30, "Peridot": 45,
+                "Carnelian": 25, "Garnet": 30, "Spinel": 45,
+                "Blue Apatite": 25, "Lapis Lazuli": 30, "Sapphire": 45
+            }
+        },
+        "หายาก": {
+            "rate": 52,
+            "items": {
+                "Fire Opal": 35, "Alexandrite": 65,
+                "Green Chrysoberyl": 35, "Tsavorite": 65,
+                "Red Zircon": 35, "Star Ruby": 65,
+                "Iolite": 35, "Blue Beryl": 65
+            }
+        },
+        "หายากมาก": {
+            "rate": 8,
+            "items": {
+                "Black Opal": 100, "Colombian Emerald": 100,
+                "Burmese Ruby": 100, "Kashmir Sapphire": 100
+            }
+        }
+    }
+}

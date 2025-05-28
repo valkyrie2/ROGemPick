@@ -1,0 +1,64 @@
+{
+    "zones": {
+        "zone_0": {
+            "ทั่วไป": {
+                "Amethyst": [4, 7],
+                "Moonstone": [6, 9],
+                "Citrine": [8, 10]
+            },
+            "หายาก": {
+                "Fire Opal": [13, 20],
+                "Alexandrite": [14, 22]
+            },
+            "หายากมาก": {
+                "Black Opal": [46, 62],
+                "ticket": "Gem Pick Shop Special Ticket 1ea"
+            }
+        },
+        "zone_2250": {
+            "ทั่วไป": {
+                "Malachite": [9, 14],
+                "Aventurine": [10, 16],
+                "Peridot": [13, 16]
+            },
+            "หายาก": {
+                "Green Chrysoberyl": [27, 42],
+                "Tsavorite": [34, 46]
+            },
+            "หายากมาก": {
+                "Colombian Emerald": [94, 116],
+                "ticket": "Gem Pick Shop Special Ticket 1ea"
+            }
+        },
+        "zone_6900": {
+            "ทั่วไป": {
+                "Carnelian": [15, 25],
+                "Garnet": [17, 28],
+                "Spinel": [23, 28]
+            },
+            "หายาก": {
+                "Red Zircon": [37, 63],
+                "Star Ruby": [43, 68]
+            },
+            "หายากมาก": {
+                "Burmese Ruby": [142, 166],
+                "ticket": "Gem Pick Shop Special Ticket 1ea"
+            }
+        },
+        "zone_25800": {
+            "ทั่วไป": {
+                "Blue Apatite": [21, 34],
+                "Lapis Lazuli": [24, 37],
+                "Sapphire": [29, 37]
+            },
+            "หายาก": {
+                "Iolite": [52, 81],
+                "Blue Beryl": [61, 88]
+            },
+            "หายากมาก": {
+                "Kashmir Sapphire": [242, 282],
+                "ticket": "Gem Pick Shop Special Ticket 1ea"
+            }
+        }
+    }
+}

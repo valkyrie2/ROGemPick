@@ -1,0 +1,58 @@
+[
+    {
+        "from": "Glove Pick I (Normal)",
+        "to": "Glove Pick II (Normal)",
+        "weight_required": 900,
+        "items_required": {
+            "Glove Pick I (Normal)": 1
+        }
+    },
+    {
+        "from": "Glove Pick II (Normal)",
+        "to": "Glove Pick I (Rare)",
+        "weight_required": 3600,
+        "items_required": {
+            "Glove Pick II (Normal)": 1
+        }
+    },
+    {
+        "from": "Glove Pick I (Rare)",
+        "to": "Glove Pick II (Rare)",
+        "weight_required": 14400,
+        "items_required": {
+            "Glove Pick I (Rare)": 1
+        }
+    },
+    {
+        "from": "Glove Pick I (Rare)",
+        "to": "Glove Pick II (Rare)",
+        "weight_required": 3600,
+        "items_required": {
+            "Glove Pick I (Rare)": 2
+        }
+    },
+    {
+        "from": "Glove Pick II (Rare)",
+        "to": "Glove Pick I (Ultra Rare)",
+        "weight_required": 14400,
+        "items_required": {
+            "Glove Pick II (Rare)": 1
+        }
+    },
+    {
+        "from": "Glove Pick II (Rare)",
+        "to": "Glove Pick II (Ultra Rare)",
+        "weight_required": 14400,
+        "items_required": {
+            "Glove Pick II (Rare)": 2
+        }
+    },
+    {
+        "from": "Glove Pick I (Ultra Rare)",
+        "to": "Glove Pick II (Ultra Rare)",
+        "weight_required": 14400,
+        "items_required": {
+            "Glove Pick I (Ultra Rare)": 1
+        }
+    }
+]

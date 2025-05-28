@@ -227,8 +227,7 @@ function selectRandomGem(gloveType, zone) {
     if (!selectedRarity || !mineData.zones[zone][selectedRarity]) {
         return null;
     }
-    
-    // Skip ticket items for very rare category
+      // Handle ticket items for very rare category
     if (selectedRarity === 'หายากมาก' && mineData.zones[zone][selectedRarity].hasOwnProperty('ticket')) {
         const availableGems = Object.keys(mineData.zones[zone][selectedRarity])
             .filter(key => key !== 'ticket');
@@ -239,10 +238,14 @@ function selectRandomGem(gloveType, zone) {
         
         // Select a random gem from available ones
         const randomGem = availableGems[Math.floor(Math.random() * availableGems.length)];
+        
+        // Return gem data with ticket information
         return { 
             rarity: selectedRarity, 
             gemName: randomGem,
-            scoreRange: mineData.zones[zone][selectedRarity][randomGem]
+            scoreRange: mineData.zones[zone][selectedRarity][randomGem],
+            hasTicket: true,
+            ticketName: 'ticket' // This could be replaced with actual ticket name if available
         };
     }
     
@@ -285,14 +288,20 @@ function selectRandomGem(gloveType, zone) {
 function performMining(gloveType, zone) {
     const gem = selectRandomGem(gloveType, zone);
     if (!gem) {
-        return 0;
+        return { score: 0 };
     }
     
     // Calculate a random score within the range
     const [min, max] = gem.scoreRange;
     const score = Math.floor(min + Math.random() * (max - min + 1));
     
-    return score;
+    // Return both score and ticket information if available
+    return { 
+        score: score,
+        hasTicket: gem.hasTicket || false,
+        ticketName: gem.ticketName || null,
+        rarity: gem.rarity
+    };
 }
 
 // Main calculation function
@@ -335,13 +344,26 @@ function calculateGloveProgression() {
                   // Simulate actual mining operations for this day
                 let dailyScore = 0;
                 let upgradesInDay = [];
-                
-                // We'll check for upgrades after each mining operation
+                  // We'll check for upgrades after each mining operation
                 for (let i = 0; i < minesPerDay; i++) {
                     // Perform a single mining operation
-                    const mineScore = performMining(currentGlove, bestZone);
-                    dailyScore += mineScore;
-                    totalScore += mineScore;
+                    const miningResult = performMining(currentGlove, bestZone);
+                    dailyScore += miningResult.score;
+                    totalScore += miningResult.score;
+                    
+                    // Track tickets found during mining
+                    if (miningResult.hasTicket) {
+                        // Initialize ticket tracking if not already done
+                        if (!upgradesInDay.tickets) {
+                            upgradesInDay.tickets = [];
+                        }
+                        
+                        upgradesInDay.tickets.push({
+                            mineNumber: i + 1,
+                            ticketName: miningResult.ticketName,
+                            rarity: miningResult.rarity
+                        });
+                    }
                     
                     // Check if we can upgrade after this mining operation
                     let keepUpgrading = true;
@@ -365,11 +387,13 @@ function calculateGloveProgression() {
                             keepUpgrading = false;
                         }
                     }
-                }
-                  // Store daily results - capturing all glove changes
+                }                // Store daily results - capturing all glove changes
                 const firstGloveOfDay = upgradesInDay.length > 0 ? upgradesInDay[0].from : currentGlove;
                 const lastGloveOfDay = upgradesInDay.length > 0 ? upgradesInDay[upgradesInDay.length - 1].to : currentGlove;
                 const hadUpgrade = upgradesInDay.length > 0;
+                
+                // Count tickets
+                const ticketsFound = upgradesInDay.tickets ? upgradesInDay.tickets.length : 0;
                 
                 dailyResults.push({
                     day,
@@ -380,7 +404,9 @@ function calculateGloveProgression() {
                     upgrade: hadUpgrade,
                     upgradeSequence: upgradesInDay,
                     actualMines: minesPerDay,
-                    finalGlove: lastGloveOfDay
+                    finalGlove: lastGloveOfDay,
+                    tickets: ticketsFound,
+                    ticketDetails: upgradesInDay.tickets || []
                 });
                 
                 // No need to apply upgrades at the end of the day, as we've already updated currentGlove during mining
@@ -423,19 +449,31 @@ function updateUI(startGlove, endGlove, dailyResults) {
     // Set final score
     const finalScore = dailyResults.length > 0 ? dailyResults[dailyResults.length - 1].totalScore : 0;
     finalScoreElement.textContent = finalScore.toLocaleString();
-    
-    // Calculate total mines used
+      // Calculate total mines used
     const totalMines = dailyResults.reduce((total, result) => total + (result.actualMines || 0), 0);
     document.getElementById('totalMines').textContent = totalMines.toLocaleString();
+    
+    // Calculate total tickets found
+    const totalTickets = dailyResults.reduce((total, result) => total + (result.tickets || 0), 0);
+    document.getElementById('totalTickets').textContent = totalTickets.toLocaleString();
     
     // Clear existing progress table
     progressTableElement.innerHTML = '';    // Populate progress table
     dailyResults.forEach((result, index) => {
         const row = document.createElement('tr');
-        
-        // Add highlight class if there was an upgrade
+          // Add highlight class if there was an upgrade
         if (result.upgrade) {
             row.classList.add('table-success');
+        }
+        
+        // Add highlight for ticket days
+        if (result.tickets && result.tickets > 0) {
+            // Use a different class or add a specific style
+            row.classList.add('ticket-day');
+            // If there's already an upgrade class, don't override it
+            if (!result.upgrade) {
+                row.style.backgroundColor = 'rgba(255, 193, 7, 0.2)';
+            }
         }
           // Format zone name for display
         const zoneDisplay = result.zone.replace('zone_', '') + ' pts';
@@ -453,25 +491,52 @@ function updateUI(startGlove, endGlove, dailyResults) {
                 ).join('');
             }
         }
-        
-        // Create tooltip for more detailed upgrade information
+          // Create tooltip for more detailed upgrade and ticket information
         let tooltipContent = '';
+        let hasTooltip = false;
+        
+        // Add upgrade information to tooltip
         if (result.upgrade && result.upgradeSequence && result.upgradeSequence.length > 0) {
             tooltipContent = result.upgradeSequence.map(upgrade => 
                 `${upgrade.from} → ${upgrade.to} (after mine #${upgrade.afterMineNumber}, score: ${upgrade.totalScore})`
             ).join('<br>');
+            hasTooltip = true;
+        }
+        
+        // Add ticket information to tooltip
+        if (result.ticketDetails && result.ticketDetails.length > 0) {
+            if (hasTooltip) {
+                tooltipContent += '<br><br>Tickets found:<br>';
+            } else {
+                tooltipContent = 'Tickets found:<br>';
+            }
             
-            // Set tooltip data attribute
+            tooltipContent += result.ticketDetails.map(ticket => 
+                `Ticket: ${ticket.ticketName} (mine #${ticket.mineNumber}, rarity: ${ticket.rarity})`
+            ).join('<br>');
+            
+            hasTooltip = true;
+        }
+        
+        // Set tooltip data attribute if there's content
+        if (hasTooltip) {
             row.setAttribute('data-bs-toggle', 'tooltip');
             row.setAttribute('data-bs-html', 'true');
             row.setAttribute('title', tooltipContent);
         }
-          row.innerHTML = `
+        
+        // Format ticket display
+        let ticketDisplay = result.tickets > 0 ? 
+            `${result.tickets} <i class="bi bi-ticket-perforated-fill text-warning"></i>` : 
+            '0';
+        
+        row.innerHTML = `
             <td>${result.day}</td>
             <td>${result.gloveType}${upgradeDisplay}</td>
             <td>${result.scoreGained.toLocaleString()}</td>
             <td>${result.totalScore.toLocaleString()}</td>
             <td>${zoneDisplay}</td>
+            <td>${ticketDisplay}</td>
         `;
         
         progressTableElement.appendChild(row);
@@ -488,14 +553,18 @@ function updateUI(startGlove, endGlove, dailyResults) {
 }
 
 // Update progress chart
-function updateProgressChart(dailyResults) {
-    // Extract data for chart
+function updateProgressChart(dailyResults) {    // Extract data for chart
     const days = dailyResults.map(result => `Day ${result.day}`);
     const scores = dailyResults.map(result => result.totalScore);
     
     // Create upgrade markers
     const upgradePoints = dailyResults.map((result, index) => 
         result.upgrade ? scores[index] : null
+    );
+    
+    // Create ticket markers
+    const ticketPoints = dailyResults.map((result, index) => 
+        (result.tickets && result.tickets > 0) ? scores[index] : null
     );
     
     // Destroy existing chart if it exists
@@ -526,6 +595,16 @@ function updateProgressChart(dailyResults) {
                     pointHoverRadius: 10,
                     showLine: false,
                     pointStyle: 'star'
+                },
+                {
+                    label: 'Tickets',
+                    data: ticketPoints,
+                    pointBackgroundColor: 'rgba(255, 193, 7, 1)',
+                    pointBorderColor: 'rgba(255, 255, 255, 1)',
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    showLine: false,
+                    pointStyle: 'triangle'
                 }
             ]
         },
@@ -546,27 +625,52 @@ function updateProgressChart(dailyResults) {
                         label: function(context) {
                             const index = context.dataIndex;
                             const datasetIndex = context.datasetIndex;
-                              if (datasetIndex === 1 && upgradePoints[index] !== null) {
+                            
+                            // For ticket points
+                            if (datasetIndex === 2 && ticketPoints[index] !== null) {
+                                const result = dailyResults[index];
+                                let info = [`Score: ${scores[index].toLocaleString()}`];
+                                info.push(`Tickets: ${result.tickets}`);
+                                
+                                // Add ticket details
+                                if (result.ticketDetails && result.ticketDetails.length > 0) {
+                                    result.ticketDetails.forEach((ticket, idx) => {
+                                        info.push(`Ticket ${idx + 1}: Found at mine #${ticket.mineNumber}`);
+                                    });
+                                }
+                                
+                                return info;
+                            } else if (datasetIndex === 1 && upgradePoints[index] !== null) {
                                 // For upgrade points, show the upgrade info
                                 const result = dailyResults[index];
                                 let info = [`Score: ${scores[index].toLocaleString()}`];
                                 
+                                // Add ticket information if any
+                                if (result.tickets && result.tickets > 0) {
+                                    info.push(`Tickets: ${result.tickets}`);
+                                }
+                                
                                 if (result.upgradeSequence && result.upgradeSequence.length > 0) {
                                     if (result.upgradeSequence.length === 1) {
-                                        // Single upgrade
-                                        info.push(`Upgrade: ${result.gloveType} → ${result.upgradeSequence[0].to}`);
+                                        // Single upgrade with mining operation information
+                                        const upgrade = result.upgradeSequence[0];
+                                        info.push(`Upgrade: ${upgrade.from} → ${upgrade.to} (after mine #${upgrade.afterMineNumber})`);
                                     } else {
-                                        // Multiple upgrades
+                                        // Multiple upgrades with mining operation information
                                         info.push(`Upgrades (${result.upgradeSequence.length}):`);
                                         result.upgradeSequence.forEach((upgrade, idx) => {
-                                            info.push(`${idx + 1}. ${upgrade.from} → ${upgrade.to}`);
+                                            info.push(`${idx + 1}. ${upgrade.from} → ${upgrade.to} (after mine #${upgrade.afterMineNumber})`);
                                         });
                                     }
                                 }
                                 
-                                return info;
-                            } else {                                // Regular score point
+                                return info;                            } else {                                // Regular score point
                                 let info = [`Score: ${scores[index].toLocaleString()}`];
+                                
+                                // Add ticket information if any
+                                if (dailyResults[index].tickets && dailyResults[index].tickets > 0) {
+                                    info.push(`Tickets: ${dailyResults[index].tickets}`);
+                                }
                                 
                                 if (dailyResults[index].hasOwnProperty('actualMines')) {
                                     const minesPerDay = parseInt(minesPerDayInput.value, 10) || DEFAULT_MINES_PER_DAY;
@@ -590,10 +694,14 @@ function updateProgressChart(dailyResults) {
 function updateDailyScoreChart(dailyResults) {
     // Extract data for chart
     const days = dailyResults.map(result => `Day ${result.day}`);
-    const dailyScores = dailyResults.map(result => result.scoreGained);
-      // Create upgrade markers
+    const dailyScores = dailyResults.map(result => result.scoreGained);    // Create upgrade markers
     const upgradePoints = dailyResults.map((result, index) => 
         result.upgrade ? dailyScores[index] : null
+    );
+    
+    // Create ticket markers
+    const ticketPoints = dailyResults.map((result, index) => 
+        (result.tickets && result.tickets > 0) ? dailyScores[index] : null
     );
     
     // Destroy existing chart if it exists
@@ -615,9 +723,15 @@ function updateDailyScoreChart(dailyResults) {
                     borderWidth: 1
                 },
                 {
-                    label: 'Upgrade Days',
-                    data: upgradePoints,                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    label: 'Upgrade Days',                    data: upgradePoints,                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
                     borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Ticket Days',
+                    data: ticketPoints,
+                    backgroundColor: 'rgba(255, 193, 7, 0.6)',
+                    borderColor: 'rgba(255, 193, 7, 1)',
                     borderWidth: 1
                 }
             ]
@@ -654,6 +768,11 @@ function updateDailyScoreChart(dailyResults) {
                                 // For upgrade days                                const result = dailyResults[index];
                                 let info = [`Score: ${dailyScores[index].toLocaleString()}`];
                                 
+                                // Add ticket information
+                                if (result.tickets && result.tickets > 0) {
+                                    info.push(`Tickets: ${result.tickets}`);
+                                }
+                                
                                 if (result.upgradeSequence && result.upgradeSequence.length > 0) {
                                     if (result.upgradeSequence.length === 1) {
                                         // Single upgrade
@@ -684,7 +803,7 @@ function exportResultsToCSV(dailyResults) {
         alert('No data to export');
         return;
     }    // Create CSV header
-    let csvContent = "Day,Glove Type,Score Gained,Total Score,Deposit Zone,Upgrade,Upgrade Sequence,Mines Used\n";
+    let csvContent = "Day,Glove Type,Score Gained,Total Score,Deposit Zone,Upgrade,Upgrade Sequence,Mines Used,Tickets Found,Ticket Details\n";
     
     // Add data rows
     dailyResults.forEach(result => {
@@ -696,6 +815,14 @@ function exportResultsToCSV(dailyResults) {
             ).join('; ');
         }
         
+        // Format ticket details
+        let ticketDetailsText = '';
+        if (result.ticketDetails && result.ticketDetails.length > 0) {
+            ticketDetailsText = result.ticketDetails.map(ticket => 
+                `Ticket at mine #${ticket.mineNumber} (${ticket.rarity})`
+            ).join('; ');
+        }
+        
         const row = [
             result.day,
             `"${result.gloveType}"`,
@@ -704,7 +831,9 @@ function exportResultsToCSV(dailyResults) {
             `"${result.zone}"`,
             result.upgrade ? 'Yes' : 'No',
             `"${upgradeSequenceText}"`,
-            result.actualMines || 0
+            result.actualMines || 0,
+            result.tickets || 0,
+            `"${ticketDetailsText}"`
         ];
         
         csvContent += row.join(',') + '\n';

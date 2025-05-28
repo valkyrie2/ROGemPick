@@ -9,12 +9,12 @@ A web-based calculator for ROGemPick event progression, helping players plan the
 - Configure mines per day
 - View progression details:
   - Daily score acquisition
-  - Glove upgrades over time
+  - Glove upgrades during mining operations
   - Best mining zones for each day
 - Interactive charts showing:
   - Total score progression and upgrade points
   - Daily score gains with upgrade indicators
-- Detailed table with daily progress information
+- Detailed table with daily progress information including when upgrades occur
 - Export results to CSV for further analysis
 - Calculate total mines used throughout the event
 
@@ -30,10 +30,12 @@ The application uses three JSON data files:
 
 1. The calculator uses the starting glove type and simulates mining operations each day
 2. It automatically selects the best deposit zone based on your current score
-3. When enough score is accumulated for an upgrade, it applies the upgrade immediately
-4. The process continues for the specified number of days
-5. Results are displayed in charts and a detailed table
-6. Color coding helps identify upgrade days (green)
+3. After each mining operation, it checks if enough score is accumulated for an upgrade
+4. If an upgrade is available, it immediately applies the upgrade to subsequent mining operations
+5. The process continues for the specified number of days
+6. Results are displayed in charts and a detailed table
+7. Color coding helps identify upgrade days (green)
+8. Tooltips provide detailed information about when upgrades occurred during mining
 
 ## Technologies Used
 

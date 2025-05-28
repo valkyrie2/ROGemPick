@@ -332,36 +332,63 @@ function calculateGloveProgression() {
             for (let day = 1; day <= days; day++) {
                 // Find the best deposit zone for current total score
                 const bestZone = findBestDepositZone(totalScore);
-                
-                // Simulate actual mining operations for this day
+                  // Simulate actual mining operations for this day
                 let dailyScore = 0;
+                let upgradesInDay = [];
+                
+                // We'll check for upgrades after each mining operation
                 for (let i = 0; i < minesPerDay; i++) {
                     // Perform a single mining operation
                     const mineScore = performMining(currentGlove, bestZone);
                     dailyScore += mineScore;
-                }                totalScore += dailyScore;
+                    totalScore += mineScore;
+                    
+                    // Check if we can upgrade after this mining operation
+                    let keepUpgrading = true;
+                    let tempCurrentGlove = currentGlove;
+                    
+                    while (keepUpgrading) {
+                        const upgrade = findNextUpgrade(tempCurrentGlove, totalScore, startingGlove);
+                        
+                        if (upgrade) {
+                            upgradesInDay.push({
+                                from: tempCurrentGlove,
+                                to: upgrade.to,
+                                afterMineNumber: i + 1,
+                                totalScore: Math.round(totalScore)
+                            });
+                            
+                            // Update current glove for future mining operations
+                            tempCurrentGlove = upgrade.to;
+                            currentGlove = upgrade.to;
+                        } else {
+                            keepUpgrading = false;
+                        }
+                    }
+                }
+                  // Store daily results - capturing all glove changes
+                const firstGloveOfDay = upgradesInDay.length > 0 ? upgradesInDay[0].from : currentGlove;
+                const lastGloveOfDay = upgradesInDay.length > 0 ? upgradesInDay[upgradesInDay.length - 1].to : currentGlove;
+                const hadUpgrade = upgradesInDay.length > 0;
                 
-                // Check if we can upgrade the glove
-                // Pass the original starting glove to the findNextUpgrade function
-                const upgrade = findNextUpgrade(currentGlove, totalScore, startingGlove);
-                
-                // Store daily results
                 dailyResults.push({
                     day,
-                    gloveType: currentGlove,
+                    gloveType: firstGloveOfDay,
                     scoreGained: Math.round(dailyScore),
                     totalScore: Math.round(totalScore),
                     zone: bestZone,
-                    upgrade: upgrade ? true : false,
-                    actualMines: minesPerDay
+                    upgrade: hadUpgrade,
+                    upgradeSequence: upgradesInDay,
+                    actualMines: minesPerDay,
+                    finalGlove: lastGloveOfDay
                 });
                 
-                // Apply upgrade if available
-                if (upgrade) {
-                    currentGlove = upgrade.to;
-                }
-            }// Update UI with results
+                // No need to apply upgrades at the end of the day, as we've already updated currentGlove during mining
+            }            // Update UI with results
             updateUI(startingGlove, currentGlove, dailyResults);
+            
+            // Store the results for export
+            window.lastCalculatedResults = dailyResults;
             
             console.log('Calculation completed successfully');
             console.log('Results:', { 
@@ -410,25 +437,50 @@ function updateUI(startGlove, endGlove, dailyResults) {
         if (result.upgrade) {
             row.classList.add('table-success');
         }
-        
-        // Format zone name for display
+          // Format zone name for display
         const zoneDisplay = result.zone.replace('zone_', '') + ' pts';
-        
-        // Get the next glove type after upgrade
-        let nextGloveDisplay = '';
-        if (result.upgrade && index + 1 < dailyResults.length) {
-            nextGloveDisplay = ` → ${dailyResults[index + 1].gloveType}`;
+          // Build upgrade display text with mining operation numbers
+        let upgradeDisplay = '';
+        if (result.upgrade && result.upgradeSequence && result.upgradeSequence.length > 0) {
+            if (result.upgradeSequence.length === 1) {
+                // Single upgrade
+                const upgrade = result.upgradeSequence[0];
+                upgradeDisplay = ` → ${upgrade.to} (after mine #${upgrade.afterMineNumber})`;
+            } else {
+                // Multiple upgrades - create a more detailed display
+                upgradeDisplay = result.upgradeSequence.map(u => 
+                    ` → ${u.to} (after mine #${u.afterMineNumber})`
+                ).join('');
+            }
         }
         
-        row.innerHTML = `
+        // Create tooltip for more detailed upgrade information
+        let tooltipContent = '';
+        if (result.upgrade && result.upgradeSequence && result.upgradeSequence.length > 0) {
+            tooltipContent = result.upgradeSequence.map(upgrade => 
+                `${upgrade.from} → ${upgrade.to} (after mine #${upgrade.afterMineNumber}, score: ${upgrade.totalScore})`
+            ).join('<br>');
+            
+            // Set tooltip data attribute
+            row.setAttribute('data-bs-toggle', 'tooltip');
+            row.setAttribute('data-bs-html', 'true');
+            row.setAttribute('title', tooltipContent);
+        }
+          row.innerHTML = `
             <td>${result.day}</td>
-            <td>${result.gloveType}${result.upgrade ? nextGloveDisplay : ''}</td>
+            <td>${result.gloveType}${upgradeDisplay}</td>
             <td>${result.scoreGained.toLocaleString()}</td>
             <td>${result.totalScore.toLocaleString()}</td>
             <td>${zoneDisplay}</td>
         `;
         
         progressTableElement.appendChild(row);
+    });
+    
+    // Initialize tooltips for the table rows
+    const tooltips = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltips.forEach(tooltip => {
+        new bootstrap.Tooltip(tooltip);
     });
     
     // Update chart
@@ -494,16 +546,25 @@ function updateProgressChart(dailyResults) {
                         label: function(context) {
                             const index = context.dataIndex;
                             const datasetIndex = context.datasetIndex;
-                            
-                            if (datasetIndex === 1 && upgradePoints[index] !== null) {
-                                // For upgrade points, show the upgrade info                                const prevGlove = dailyResults[index].gloveType;
-                                let nextGlove = '';
-                                if (index + 1 < dailyResults.length) {
-                                    nextGlove = dailyResults[index + 1].gloveType;
-                                } else {
-                                    nextGlove = endGloveElement.textContent;
+                              if (datasetIndex === 1 && upgradePoints[index] !== null) {
+                                // For upgrade points, show the upgrade info
+                                const result = dailyResults[index];
+                                let info = [`Score: ${scores[index].toLocaleString()}`];
+                                
+                                if (result.upgradeSequence && result.upgradeSequence.length > 0) {
+                                    if (result.upgradeSequence.length === 1) {
+                                        // Single upgrade
+                                        info.push(`Upgrade: ${result.gloveType} → ${result.upgradeSequence[0].to}`);
+                                    } else {
+                                        // Multiple upgrades
+                                        info.push(`Upgrades (${result.upgradeSequence.length}):`);
+                                        result.upgradeSequence.forEach((upgrade, idx) => {
+                                            info.push(`${idx + 1}. ${upgrade.from} → ${upgrade.to}`);
+                                        });
+                                    }
                                 }
-                                return [`Score: ${scores[index].toLocaleString()}`, `Upgrade: ${prevGlove} → ${nextGlove}`];
+                                
+                                return info;
                             } else {                                // Regular score point
                                 let info = [`Score: ${scores[index].toLocaleString()}`];
                                 
@@ -589,16 +650,25 @@ function updateDailyScoreChart(dailyResults) {
                                     info.push(`Mines: ${dailyResults[index].actualMines}/${minesPerDay}`);
                                 }
                                 
-                                return info;
-                            } else if (datasetIndex === 1 && upgradePoints[index] !== null) {
-                                // For upgrade days
-                                const prevGlove = dailyResults[index].gloveType;
-                                let nextGlove = '';
-                                if (index + 1 < dailyResults.length) {
-                                    nextGlove = dailyResults[index + 1].gloveType;                                } else {
-                                    nextGlove = endGloveElement.textContent;
+                                return info;                            } else if (datasetIndex === 1 && upgradePoints[index] !== null) {
+                                // For upgrade days                                const result = dailyResults[index];
+                                let info = [`Score: ${dailyScores[index].toLocaleString()}`];
+                                
+                                if (result.upgradeSequence && result.upgradeSequence.length > 0) {
+                                    if (result.upgradeSequence.length === 1) {
+                                        // Single upgrade
+                                        const upgrade = result.upgradeSequence[0];
+                                        info.push(`Upgrade: ${upgrade.from} → ${upgrade.to} (after mine #${upgrade.afterMineNumber})`);
+                                    } else {
+                                        // Multiple upgrades
+                                        info.push(`Upgrades (${result.upgradeSequence.length}):`);
+                                        result.upgradeSequence.forEach((upgrade, idx) => {
+                                            info.push(`${idx + 1}. ${upgrade.from} → ${upgrade.to} (after mine #${upgrade.afterMineNumber})`);
+                                        });
+                                    }
                                 }
-                                return [`Score: ${dailyScores[index].toLocaleString()}`, `Upgrade: ${prevGlove} → ${nextGlove}`];
+                                
+                                return info;
                             }
                         }
                     }
@@ -613,18 +683,27 @@ function exportResultsToCSV(dailyResults) {
     if (!dailyResults || dailyResults.length === 0) {
         alert('No data to export');
         return;
-    }
-      // Create CSV header
-    let csvContent = "Day,Glove Type,Score Gained,Total Score,Deposit Zone,Upgrade,Mines Used\n";
+    }    // Create CSV header
+    let csvContent = "Day,Glove Type,Score Gained,Total Score,Deposit Zone,Upgrade,Upgrade Sequence,Mines Used\n";
     
     // Add data rows
-    dailyResults.forEach(result => {        const row = [
+    dailyResults.forEach(result => {
+        // Format upgrade sequence
+        let upgradeSequenceText = '';
+        if (result.upgradeSequence && result.upgradeSequence.length > 0) {
+            upgradeSequenceText = result.upgradeSequence.map(u => 
+                `${u.from} → ${u.to} (after mine #${u.afterMineNumber}, score: ${u.totalScore})`
+            ).join('; ');
+        }
+        
+        const row = [
             result.day,
             `"${result.gloveType}"`,
             result.scoreGained,
             result.totalScore,
             `"${result.zone}"`,
             result.upgrade ? 'Yes' : 'No',
+            `"${upgradeSequenceText}"`,
             result.actualMines || 0
         ];
         
@@ -660,41 +739,13 @@ document.getElementById('exportBtn').addEventListener('click', function() {
         return;
     }
     
-    // Extract dailyResults from the chart data
-    const dailyResults = [];
-    const days = progressChart.data.labels.map(label => parseInt(label.replace('Day ', '')));
-    const scores = progressChart.data.datasets[0].data;
-    const upgradePoints = progressChart.data.datasets[1].data;
-    
-    for (let i = 0; i < days.length; i++) {
-        // Extract information from the table        const row = progressTable.children[i];
-        const gloveType = row.children[1].innerText.split('→')[0].trim();
-        const scoreGained = parseInt(row.children[2].innerText.replace(/,/g, ''));
-        const totalScore = scores[i];
-        const zone = row.children[4].innerText;
-        const isUpgrade = upgradePoints[i] !== null;
-          // Extract mines used from the table cell text
-        let actualMines = 0;
-        if (row.children[2].innerText.includes('(')) {
-            const minesMatch = row.children[2].innerText.match(/\((\d+)\/(\d+)\)/);
-            if (minesMatch && minesMatch.length > 1) {
-                actualMines = parseInt(minesMatch[1]);
-            }
-        } else {
-            actualMines = parseInt(minesPerDayInput.value, 10) || DEFAULT_MINES_PER_DAY;
-        }
-          dailyResults.push({
-            day: days[i],
-            gloveType,
-            scoreGained,
-            totalScore,
-            zone,
-            upgrade: isUpgrade,
-            actualMines
-        });
+    // Use the global dailyResults that was last calculated
+    // This ensures we have all the detailed upgrade information
+    if (window.lastCalculatedResults && window.lastCalculatedResults.length > 0) {
+        exportResultsToCSV(window.lastCalculatedResults);
+    } else {
+        alert('No calculation data available. Please calculate first.');
     }
-    
-    exportResultsToCSV(dailyResults);
 });
 
 // Initialize with default values and load data

@@ -80,23 +80,38 @@ const DEFAULT_MINES_PER_DAY = 10; // Default number of mining operations per day
 // Function to load all JSON data
 async function loadAllData() {
     try {
+        console.log('Loading JSON data files...');
+        
         // Load Glove data
         const gloveResponse = await fetch('data/Glove.json');
+        if (!gloveResponse.ok) {
+            throw new Error(`Failed to load Glove.json: ${gloveResponse.status} ${gloveResponse.statusText}`);
+        }
         gloveData = await gloveResponse.json();
+        console.log('Glove data loaded successfully');
         
         // Load Mine data
         const mineResponse = await fetch('data/Mine.json');
+        if (!mineResponse.ok) {
+            throw new Error(`Failed to load Mine.json: ${mineResponse.status} ${mineResponse.statusText}`);
+        }
         mineData = await mineResponse.json();
+        console.log('Mine data loaded successfully');
         
         // Load Upgrade data
         const upgradeResponse = await fetch('data/Upgrade.json');
+        if (!upgradeResponse.ok) {
+            throw new Error(`Failed to load Upgrade.json: ${upgradeResponse.status} ${upgradeResponse.statusText}`);
+        }
         upgradeData = await upgradeResponse.json();
+        console.log('Upgrade data loaded successfully');
         
         // Enable calculate button once data is loaded
         calculateBtn.disabled = false;
+        console.log('All data loaded successfully');
     } catch (error) {
         console.error('Error loading data:', error);
-        alert('Failed to load data. Please check console for details.');
+        alert('Failed to load data: ' + error.message + '\n\nPlease make sure you are running this on a web server and not directly from the file system. See console for details.');
     }
 }
 
@@ -176,11 +191,11 @@ function findNextUpgrade(currentGlove, currentScore) {
 
 // Main calculation function
 function calculateGloveProgression() {
-    // Show loading modal
-    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
-    loadingModal.show();
+    // Show loading spinner directly without using Bootstrap modal
+    document.getElementById('spinner-overlay').style.display = 'flex';
+    console.log('Starting calculation...');
     
-    // Use setTimeout to allow the modal to render before starting calculations
+    // Use setTimeout to allow UI to update before starting calculations
     setTimeout(() => {
         try {
             // Get input values
@@ -188,6 +203,8 @@ function calculateGloveProgression() {
             const days = parseInt(daysInput.value, 10);
             const minesPerDay = parseInt(minesPerDayInput.value, 10) || DEFAULT_MINES_PER_DAY;
             const maxQuota = parseInt(maxQuotaInput.value, 10) || 0; // 0 means no limit
+            
+            console.log('Input values:', { startingGlove, days, minesPerDay, maxQuota });
             
             // Validate inputs
             if (isNaN(days) || days < 1) {
@@ -270,17 +287,25 @@ function calculateGloveProgression() {
                 if (maxQuota > 0) {
                     remainingQuota -= actualMines;
                 }
-            }
-            
-            // Update UI with results
+            }            // Update UI with results
             updateUI(startingGlove, currentGlove, dailyResults);
             
-            // Hide loading modal
-            loadingModal.hide();
+            console.log('Calculation completed successfully');
+            console.log('Results:', { 
+                startGlove: startingGlove, 
+                endGlove: currentGlove, 
+                totalDays: days, 
+                finalScore: dailyResults[dailyResults.length - 1].totalScore,
+                totalUpgrades: dailyResults.filter(result => result.upgrade).length
+            });
+            
+            // Hide loading spinner
+            document.getElementById('spinner-overlay').style.display = 'none';
         } catch (error) {
             console.error('Calculation error:', error);
-            alert('An error occurred during calculation. Please check console for details.');
-            loadingModal.hide();
+            alert('An error occurred during calculation: ' + error.message + '\n\nPlease check console for details.');
+            // Hide loading spinner
+            document.getElementById('spinner-overlay').style.display = 'none';
         }
     }, 100);
 }
@@ -652,6 +677,9 @@ window.addEventListener('DOMContentLoaded', () => {
     // Initialize tooltips
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    
+    // Make sure spinner is hidden initially
+    document.getElementById('spinner-overlay').style.display = 'none';
     
     // Load JSON data
     loadAllData().then(() => {

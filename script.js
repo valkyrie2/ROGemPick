@@ -179,19 +179,25 @@ function calculateExpectedScorePerMine(gloveType, zone) {
 }
 
 // Function to find the next upgrade for a glove
-function findNextUpgrade(currentGlove, currentScore, isStartingGlove = false) {
+function findNextUpgrade(currentGlove, currentScore, startingGlove) {
+    console.log(`upgradeData:`, upgradeData);
     let possibleUpgrades = upgradeData.filter(upgrade => 
-        upgrade.from === currentGlove && 
-        upgrade.weight_required <= currentScore
+        upgrade.from === currentGlove
     );
+    console.log(`Possible upgrades for ${currentGlove} with score ${currentScore}:`, possibleUpgrades);
     
     // Special handling for Glove Pick I (Rare) based on starting glove
-    if (currentGlove === "Glove Pick I (Rare)" && possibleUpgrades.length > 1) {
-        // If this was the starting glove, use the path that requires 2 gloves (3600 weight)
-        // Otherwise, use the path that requires 1 glove (14400 weight)
-        const weightToFind = isStartingGlove ? 3600 : 14400;
+    if (currentGlove === "Glove Pick I (Rare)" && startingGlove === "Glove Pick I (Rare)") {
+        // If the starting glove was "Glove Pick I (Rare)", use the path with 3600 weight
+        // If the starting glove was something else (like "Glove Pick I (Normal)"), use the 14400 weight path
+        const weightToFind = 3600;
         possibleUpgrades = possibleUpgrades.filter(upgrade => 
-            upgrade.weight_required === weightToFind
+            weightToFind <= currentScore
+        );
+    }
+    else{
+        possibleUpgrades = possibleUpgrades.filter(upgrade => 
+            upgrade.weight_required <= currentScore
         );
     }
     
@@ -333,13 +339,11 @@ function calculateGloveProgression() {
                     // Perform a single mining operation
                     const mineScore = performMining(currentGlove, bestZone);
                     dailyScore += mineScore;
-                }
-                  totalScore += dailyScore;
+                }                totalScore += dailyScore;
                 
                 // Check if we can upgrade the glove
-                // Pass whether this is the starting glove when calling findNextUpgrade
-                const isStartingGlove = currentGlove === startingGlove;
-                const upgrade = findNextUpgrade(currentGlove, totalScore, isStartingGlove);
+                // Pass the original starting glove to the findNextUpgrade function
+                const upgrade = findNextUpgrade(currentGlove, totalScore, startingGlove);
                 
                 // Store daily results
                 dailyResults.push({

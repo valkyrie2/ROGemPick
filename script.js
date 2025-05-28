@@ -76,6 +76,7 @@ const dailyScoreCtx = document.getElementById('dailyScoreChart').getContext('2d'
 
 // Constants
 const DEFAULT_MINES_PER_DAY = 10; // Default number of mining operations per day
+const MAX_MINES_PER_DAY = 250; // Maximum mines per day
 
 // Function to load all JSON data
 async function loadAllData() {
@@ -187,6 +188,96 @@ function findNextUpgrade(currentGlove, currentScore) {
     
     // Sort by weight required in descending order to get the highest upgrade possible
     return possibleUpgrades.sort((a, b) => b.weight_required - a.weight_required)[0];
+}
+
+// Function to select a random gem based on glove probabilities
+function selectRandomGem(gloveType, zone) {
+    if (!gloveData[gloveType] || !mineData.zones[zone]) {
+        return null;
+    }
+    
+    // First, determine the rarity based on the glove's rarity rates
+    let rarityRandom = Math.random() * 100;
+    let selectedRarity = null;
+    let cumulativeRate = 0;
+    
+    for (const rarity in gloveData[gloveType]) {
+        cumulativeRate += gloveData[gloveType][rarity].rate;
+        if (rarityRandom <= cumulativeRate) {
+            selectedRarity = rarity;
+            break;
+        }
+    }
+    
+    if (!selectedRarity || !mineData.zones[zone][selectedRarity]) {
+        return null;
+    }
+    
+    // Skip ticket items for very rare category
+    if (selectedRarity === 'หายากมาก' && mineData.zones[zone][selectedRarity].hasOwnProperty('ticket')) {
+        const availableGems = Object.keys(mineData.zones[zone][selectedRarity])
+            .filter(key => key !== 'ticket');
+        
+        if (availableGems.length === 0) {
+            return null;
+        }
+        
+        // Select a random gem from available ones
+        const randomGem = availableGems[Math.floor(Math.random() * availableGems.length)];
+        return { 
+            rarity: selectedRarity, 
+            gemName: randomGem,
+            scoreRange: mineData.zones[zone][selectedRarity][randomGem]
+        };
+    }
+    
+    // For normal categories, select based on weight in the glove data
+    const rarityData = gloveData[gloveType][selectedRarity];
+    const availableGems = Object.keys(rarityData.items)
+        .filter(gemName => mineData.zones[zone][selectedRarity] && 
+                         mineData.zones[zone][selectedRarity][gemName]);
+    
+    if (availableGems.length === 0) {
+        return null;
+    }
+    
+    // Create a weighted selection based on the item weights
+    const totalWeight = availableGems.reduce((sum, gemName) => sum + rarityData.items[gemName], 0);
+    let random = Math.random() * totalWeight;
+    let cumulativeWeight = 0;
+    
+    for (const gemName of availableGems) {
+        cumulativeWeight += rarityData.items[gemName];
+        if (random <= cumulativeWeight) {
+            return { 
+                rarity: selectedRarity, 
+                gemName: gemName,
+                scoreRange: mineData.zones[zone][selectedRarity][gemName]
+            };
+        }
+    }
+    
+    // Fallback to a random selection if something went wrong
+    const randomGem = availableGems[Math.floor(Math.random() * availableGems.length)];
+    return { 
+        rarity: selectedRarity, 
+        gemName: randomGem,
+        scoreRange: mineData.zones[zone][selectedRarity][randomGem]
+    };
+}
+
+// Function to perform a single mining operation
+function performMining(gloveType, zone) {
+    const gem = selectRandomGem(gloveType, zone);
+    if (!gem) {
+        return 0;
+    }
+    
+    // Calculate a random score within the range
+    const [min, max] = gem.scoreRange;
+    const score = Math.floor(min + Math.random() * (max - min + 1));
+    
+    return score;
 }
 
 // Main calculation function

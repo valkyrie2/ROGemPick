@@ -31,19 +31,18 @@
                     <input type="number" class="form-control" id="days" min="1" value="7">
                     <small class="text-muted">Enter the number of days you plan to play</small>
                 </div>
-            </div>
-            <div class="col-md-3">
+            </div>            <div class="col-md-3">
                 <div class="form-group">
-                    <label for="minesPerDay">Mines Per Day: <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="How many mining operations you can perform each day (1-20)"></i></label>
-                    <input type="number" class="form-control" id="minesPerDay" min="1" max="20" value="10">
+                    <label for="minesPerDay">Mines Per Day: <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="How many mining operations you can perform each day (1-250)"></i></label>
+                    <input type="number" class="form-control" id="minesPerDay" min="1" max="250" value="10">
                     <small class="text-muted">How many times you mine each day</small>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="form-group">
-                    <label for="maxQuota">Max Daily Quota: <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="Optional: set a limit for total mines across all days (0 = no limit)"></i></label>
+                    <label for="maxQuota">Max Total Mines: <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="Optional: set a limit for total mines across all days (0 = no limit)"></i></label>
                     <input type="number" class="form-control" id="maxQuota" min="0" value="0">
-                    <small class="text-muted">Max quota per day (0 = no limit)</small>
+                    <small class="text-muted">Total mines limit (0 = no limit)</small>
                 </div>
             </div>
         </div>        <div class="row mb-3">

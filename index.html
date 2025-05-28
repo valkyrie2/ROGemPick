@@ -6,12 +6,17 @@
     <title>ROGemPick Calculator</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>    <div class="container mt-4">
-        <h1 class="text-center mb-4">ROGemPick Calculator</h1>          <div class="row mb-4">
-            <div class="col-md-3">
+        <h1 class="text-center mb-4">ROGemPick Calculator</h1>
+        <div class="alert alert-info mb-4">
+            <h5>Welcome to ROGemPick Calculator</h5>
+            <p>This tool helps you plan your glove upgrades and mining strategy for the ROGemPick event. Fill in your starting parameters below and click "Calculate" to see your progress over time.</p>
+        </div>          
+        <div class="row mb-4">            <div class="col-md-3">
                 <div class="form-group">
-                    <label for="gloveType">Starting Glove:</label>
+                    <label for="gloveType">Starting Glove: <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="Select the glove you currently have or will start with"></i></label>
                     <select class="form-control" id="gloveType">
                         <option value="Glove Pick I (Normal)">Glove Pick I (Normal)</option>
                         <option value="Glove Pick II (Normal)">Glove Pick II (Normal)</option>
@@ -22,41 +27,48 @@
             </div>
             <div class="col-md-3">
                 <div class="form-group">
-                    <label for="days">Days Playing Event:</label>
+                    <label for="days">Days Playing Event: <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="How many days you plan to participate in the event"></i></label>
                     <input type="number" class="form-control" id="days" min="1" value="7">
                     <small class="text-muted">Enter the number of days you plan to play</small>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="form-group">
-                    <label for="minesPerDay">Mines Per Day:</label>
+                    <label for="minesPerDay">Mines Per Day: <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="How many mining operations you can perform each day (1-20)"></i></label>
                     <input type="number" class="form-control" id="minesPerDay" min="1" max="20" value="10">
                     <small class="text-muted">How many times you mine each day</small>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="form-group">
-                    <label for="maxQuota">Max Daily Quota:</label>
+                    <label for="maxQuota">Max Daily Quota: <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="Optional: set a limit for total mines across all days (0 = no limit)"></i></label>
                     <input type="number" class="form-control" id="maxQuota" min="0" value="0">
                     <small class="text-muted">Max quota per day (0 = no limit)</small>
                 </div>
             </div>
-        </div>
-
-        <div class="row mb-3"></div>
+        </div>        <div class="row mb-3">
             <div class="col-12">
                 <button class="btn btn-primary" id="calculateBtn">Calculate</button>
             </div>
         </div>
-        
-        <div class="row mb-4">
-            <div class="col-12">
+          <div class="row mb-4">
+            <div class="col-md-6">
                 <div class="card">
                     <div class="card-header bg-dark text-white">
-                        Daily Progress Chart
+                        Total Score Progress
                     </div>
                     <div class="card-body">
                         <canvas id="progressChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        Daily Score Gain
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dailyScoreChart" width="400" height="200"></canvas>
                     </div>
                 </div>
             </div>
@@ -87,13 +99,19 @@
                                 <tr>
                                     <td>Total Upgrades</td>
                                     <td id="totalUpgrades">0</td>
-                                </tr>
-                                <tr>
+                                </tr>                                <tr>
                                     <td>Final Score</td>
                                     <td id="finalScore">0</td>
                                 </tr>
+                                <tr>
+                                    <td>Total Mines Used</td>
+                                    <td id="totalMines">0</td>
+                                </tr>
                             </tbody>
                         </table>
+                        <div class="mt-3">
+                            <button id="exportBtn" class="btn btn-secondary w-100">Export Results</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -128,8 +146,24 @@
             </div>
         </div>
     </div>    <footer class="bg-light text-center py-3 mt-5">
-        <p>ROGemPick Calculator &copy; 2025</p>
+        <p>ROGemPick Calculator &copy; 2025 | <a href="https://github.com/YourUsername/ROGemPick" target="_blank">View on GitHub</a></p>
+        <p class="small text-muted mt-2">Created to help RO players optimize their GemPick event strategy</p>
     </footer>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5>Calculating Results...</h5>
+                    <p class="text-muted">Please wait while we process your data.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

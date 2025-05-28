@@ -6,12 +6,17 @@ A web-based calculator for ROGemPick event progression, helping players plan the
 
 - Select starting glove type
 - Input number of days to play the event
+- Configure mines per day and optional quota limits
 - View progression details:
   - Daily score acquisition
   - Glove upgrades over time
   - Best mining zones for each day
-- Interactive chart showing score progression and upgrade points
+- Interactive charts showing:
+  - Total score progression and upgrade points
+  - Daily score gains with upgrade and quota indicators
 - Detailed table with daily progress information
+- Export results to CSV for further analysis
+- Calculate total mines used throughout the event
 
 ## Data Structure
 
@@ -27,7 +32,8 @@ The application uses three JSON data files:
 2. It automatically selects the best deposit zone based on your current score
 3. When enough score is accumulated for an upgrade, it applies the upgrade immediately
 4. The process continues for the specified number of days
-5. Results are displayed in a chart and detailed table
+5. Results are displayed in charts and a detailed table
+6. Color coding helps identify upgrade days (green) and quota limit days (yellow)
 
 ## Technologies Used
 
@@ -36,6 +42,7 @@ The application uses three JSON data files:
 - JavaScript (vanilla)
 - Bootstrap 5 for responsive layout and styling
 - Chart.js for data visualization
+- Bootstrap Icons for enhanced UI
 
 ## Getting Started
 
@@ -45,9 +52,25 @@ The application uses three JSON data files:
    ```
 2. Open `index.html` in your browser
 3. Select a starting glove type and number of days
-4. Click "Calculate" to see the results
+4. Configure mines per day and optional quota limits
+5. Click "Calculate" to see the results
+6. Use the "Export Results" button to download the data as CSV
 
 ## Live Demo
+
+This project is deployed on GitHub Pages. You can access it at: https://valkyrie2.github.io/ROGemPick/
+
+## CI/CD
+
+This project uses GitHub Actions for continuous integration and deployment to GitHub Pages. The workflow is defined in `.github/workflows/deploy.yml`. Any push to the main branch will automatically trigger a deployment.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contributing
+
+Feel free to submit issues or pull requests.
 
 This project is deployed on GitHub Pages. You can access it at: https://valkyrie2.github.io/ROGemPick/
 

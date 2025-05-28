@@ -28,10 +28,17 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload artifact
+      - name: Upload root artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'data'  # Deploy ONLY the 'data' folder
+          path: '.'
+          name: 'root'
+
+      - name: Upload data artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'data'
+          name: 'data'
 
       - name: Deploy to GitHub Pages
         id: deployment

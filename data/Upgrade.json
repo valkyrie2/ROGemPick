@@ -14,21 +14,12 @@
         "items_required": {
             "Glove Pick II (Normal)": 1
         }
-    },
-    {
-        "from": "Glove Pick I (Rare)",
-        "to": "Glove Pick II (Rare)",
-        "weight_required": 14400,
-        "items_required": {
-            "Glove Pick I (Rare)": 1
-        }
-    },
-    {
+    },    {
         "from": "Glove Pick I (Rare)",
         "to": "Glove Pick II (Rare)",
         "weight_required": 3600,
         "items_required": {
-            "Glove Pick I (Rare)": 2
+            "Glove Pick I (Rare)": 1
         }
     },
     {

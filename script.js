@@ -179,11 +179,21 @@ function calculateExpectedScorePerMine(gloveType, zone) {
 }
 
 // Function to find the next upgrade for a glove
-function findNextUpgrade(currentGlove, currentScore) {
-    const possibleUpgrades = upgradeData.filter(upgrade => 
+function findNextUpgrade(currentGlove, currentScore, isStartingGlove = false) {
+    let possibleUpgrades = upgradeData.filter(upgrade => 
         upgrade.from === currentGlove && 
         upgrade.weight_required <= currentScore
     );
+    
+    // Special handling for Glove Pick I (Rare) based on starting glove
+    if (currentGlove === "Glove Pick I (Rare)" && possibleUpgrades.length > 1) {
+        // If this was the starting glove, use the path that requires 2 gloves (3600 weight)
+        // Otherwise, use the path that requires 1 glove (14400 weight)
+        const weightToFind = isStartingGlove ? 3600 : 14400;
+        possibleUpgrades = possibleUpgrades.filter(upgrade => 
+            upgrade.weight_required === weightToFind
+        );
+    }
     
     // Sort by weight required in descending order to get the highest upgrade possible
     return possibleUpgrades.sort((a, b) => b.weight_required - a.weight_required)[0];
@@ -324,11 +334,12 @@ function calculateGloveProgression() {
                     const mineScore = performMining(currentGlove, bestZone);
                     dailyScore += mineScore;
                 }
-                
-                totalScore += dailyScore;
+                  totalScore += dailyScore;
                 
                 // Check if we can upgrade the glove
-                const upgrade = findNextUpgrade(currentGlove, totalScore);
+                // Pass whether this is the starting glove when calling findNextUpgrade
+                const isStartingGlove = currentGlove === startingGlove;
+                const upgrade = findNextUpgrade(currentGlove, totalScore, isStartingGlove);
                 
                 // Store daily results
                 dailyResults.push({

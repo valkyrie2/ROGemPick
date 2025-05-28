@@ -9,9 +9,8 @@
 </head>
 <body>    <div class="container mt-4">
         <h1 class="text-center mb-4">ROGemPick Calculator</h1>
-        
-        <div class="row mb-4">
-            <div class="col-md-6">
+          <div class="row mb-4">
+            <div class="col-md-4">
                 <div class="form-group">
                     <label for="gloveType">Starting Glove:</label>
                     <select class="form-control" id="gloveType">
@@ -22,11 +21,18 @@
                     </select>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="form-group">
                     <label for="days">Days Playing Event:</label>
                     <input type="number" class="form-control" id="days" min="1" value="7">
                     <small class="text-muted">Enter the number of days you plan to play</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="minesPerDay">Mines Per Day:</label>
+                    <input type="number" class="form-control" id="minesPerDay" min="1" max="20" value="10">
+                    <small class="text-muted">How many times you mine each day</small>
                 </div>
             </div>
         </div>
@@ -63,8 +69,7 @@
                                     <th>Property</th>
                                     <th>Value</th>
                                 </tr>
-                            </thead>
-                            <tbody id="gloveStatsTable">
+                            </thead>                            <tbody id="gloveStatsTable">
                                 <tr>
                                     <td>Start Glove</td>
                                     <td id="startGlove">-</td>
@@ -76,6 +81,10 @@
                                 <tr>
                                     <td>Total Upgrades</td>
                                     <td id="totalUpgrades">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Final Score</td>
+                                    <td id="finalScore">0</td>
                                 </tr>
                             </tbody>
                         </table>

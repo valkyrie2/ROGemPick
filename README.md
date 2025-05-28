@@ -1,18 +1,33 @@
 # ROGemPick Calculator
 
-A simple web-based calculator for analyzing and comparing different gem types and quantities.
+A web-based calculator for ROGemPick event progression, helping players plan their glove upgrades and mining strategy.
 
 ## Features
 
-- Select different gem types from a dropdown menu
-- Input quantity of gems (minimum 0)
-- View gem statistics in three separate tables:
-  - Gem Stats: Basic properties of the selected gem
-  - Resource Requirements: Resources needed to craft the gems
-  - Total Output: Calculated metrics like total power and efficiency
-- Interactive data visualization with Chart.js
-- Bulk crafting bonuses and discounts
-- Responsive design for mobile and desktop
+- Select starting glove type
+- Input number of days to play the event
+- View progression details:
+  - Daily score acquisition
+  - Glove upgrades over time
+  - Best mining zones for each day
+- Interactive chart showing score progression and upgrade points
+- Detailed table with daily progress information
+
+## Data Structure
+
+The application uses three JSON data files:
+
+- `Glove.json`: Contains information about different glove types and their gem drop rates
+- `Mine.json`: Contains information about different deposit zones and their score values
+- `Upgrade.json`: Contains information about glove upgrade requirements
+
+## How It Works
+
+1. The calculator uses the starting glove type and simulates mining operations each day
+2. It automatically selects the best deposit zone based on your current score
+3. When enough score is accumulated for an upgrade, it applies the upgrade immediately
+4. The process continues for the specified number of days
+5. Results are displayed in a chart and detailed table
 
 ## Technologies Used
 
@@ -29,22 +44,12 @@ A simple web-based calculator for analyzing and comparing different gem types an
    git clone https://github.com/valkyrie2/ROGemPick.git
    ```
 2. Open `index.html` in your browser
-3. Select a gem type and quantity
+3. Select a starting glove type and number of days
 4. Click "Calculate" to see the results
 
 ## Live Demo
 
 This project is deployed on GitHub Pages. You can access it at: https://valkyrie2.github.io/ROGemPick/
-
-## GitHub Pages Setup
-
-To set up GitHub Pages for your fork of this project:
-
-1. Go to your repository on GitHub
-2. Click on "Settings"
-3. Navigate to "Pages" in the left sidebar
-4. Under "Source", select "GitHub Actions" 
-5. The site will be automatically deployed using the workflow in `.github/workflows/deploy.yml`
 
 ## CI/CD
 

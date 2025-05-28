@@ -2,9 +2,9 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -31,9 +31,7 @@ jobs:
       - name: Prepare publish folder
         run: |
           mkdir publish
-          cp -r ./* publish/
-          cp -r ./data/* publish/data/
-          rm -rf publish/.git publish/.github
+          rsync -av --exclude 'publish' --exclude '.git' --exclude '.github' ./ publish/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

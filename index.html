@@ -38,13 +38,6 @@
                     <small class="text-muted">How many times you mine each day</small>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label for="maxQuota">Max Total Mines: <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="Optional: set a limit for total mines across all days (0 = no limit)"></i></label>
-                    <input type="number" class="form-control" id="maxQuota" min="0" value="0">
-                    <small class="text-muted">Total mines limit (0 = no limit)</small>
-                </div>
-            </div>
         </div>        <div class="row mb-3">
             <div class="col-12">
                 <button class="btn btn-primary" id="calculateBtn">Calculate</button>
@@ -119,10 +112,8 @@
                 <div class="card mb-4">                    <div class="card-header bg-success text-white">
                         Daily Progress
                     </div>
-                    <div class="card-body">
-                        <div class="legend mb-3">
+                    <div class="card-body">                        <div class="legend mb-3">
                             <span class="legend-item"><span class="legend-color bg-success"></span> Upgrade Day</span>
-                            <span class="legend-item"><span class="legend-color bg-warning"></span> Quota Limit Reached</span>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-bordered">

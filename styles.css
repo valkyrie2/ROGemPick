@@ -64,11 +64,6 @@ h1 {
     background-color: rgba(40, 167, 69, 0.15) !important;
 }
 
-/* Table highlight for quota limit */
-.table-warning {
-    background-color: rgba(255, 193, 7, 0.15) !important;
-}
-
 /* Table responsive */
 .table-responsive {
     max-height: 400px;

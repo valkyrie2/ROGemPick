@@ -56,7 +56,6 @@ let upgradeData = [];
 const gloveTypeSelect = document.getElementById('gloveType');
 const daysInput = document.getElementById('days');
 const minesPerDayInput = document.getElementById('minesPerDay');
-const maxQuotaInput = document.getElementById('maxQuota');
 const calculateBtn = document.getElementById('calculateBtn');
 
 // Stats elements
@@ -288,14 +287,12 @@ function calculateGloveProgression() {
     
     // Use setTimeout to allow UI to update before starting calculations
     setTimeout(() => {
-        try {
-            // Get input values
+        try {            // Get input values
             const startingGlove = gloveTypeSelect.value;
             const days = parseInt(daysInput.value, 10);
             const minesPerDay = parseInt(minesPerDayInput.value, 10) || DEFAULT_MINES_PER_DAY;
-            const maxQuota = parseInt(maxQuotaInput.value, 10) || 0; // 0 means no limit
             
-            console.log('Input values:', { startingGlove, days, minesPerDay, maxQuota });
+            console.log('Input values:', { startingGlove, days, minesPerDay });
             
             // Validate inputs
             if (isNaN(days) || days < 1) {
@@ -305,53 +302,29 @@ function calculateGloveProgression() {
                 return;
             }
             
-            if (isNaN(minesPerDay) || minesPerDay < 1 || minesPerDay > 20) {
-                alert('Please enter a valid number of mines per day (between 1 and 20)');
+            if (isNaN(minesPerDay) || minesPerDay < 1 || minesPerDay > MAX_MINES_PER_DAY) {
+                alert(`Please enter a valid number of mines per day (between 1 and ${MAX_MINES_PER_DAY})`);
                 minesPerDayInput.value = DEFAULT_MINES_PER_DAY;
                 loadingModal.hide();
                 return;
-            }
-            
-            if (isNaN(maxQuota) || maxQuota < 0) {
-                alert('Please enter a valid max quota (minimum 0)');
-                maxQuotaInput.value = 0;
-                loadingModal.hide();
-                return;
-            }
-
-            // Initialize variables
+            }            // Initialize variables
             let currentGlove = startingGlove;
             let totalScore = 0;
             let dailyResults = [];
-            let remainingQuota = maxQuota > 0 ? maxQuota : Number.MAX_SAFE_INTEGER; // Use MAX_SAFE_INTEGER if no limit
             
             // Calculate progression for each day
             for (let day = 1; day <= days; day++) {
                 // Find the best deposit zone for current total score
                 const bestZone = findBestDepositZone(totalScore);
                 
-                // Calculate expected score for this day
-                const expectedScorePerMine = calculateExpectedScorePerMine(currentGlove, bestZone);
-                
-                // Calculate actual mines based on remaining quota
-                const actualMines = maxQuota > 0 ? Math.min(minesPerDay, remainingQuota) : minesPerDay;
-                
-                // Skip this day if no quota left
-                if (actualMines <= 0) {
-                    dailyResults.push({
-                        day,
-                        gloveType: currentGlove,
-                        scoreGained: 0,
-                        totalScore: Math.round(totalScore),
-                        zone: bestZone,
-                        upgrade: false,
-                        quotaReached: true
-                    });
-                    continue;
+                // Simulate actual mining operations for this day
+                let dailyScore = 0;
+                for (let i = 0; i < minesPerDay; i++) {
+                    // Perform a single mining operation
+                    const mineScore = performMining(currentGlove, bestZone);
+                    dailyScore += mineScore;
                 }
                 
-                // Calculate daily score
-                const dailyScore = expectedScorePerMine * actualMines;
                 totalScore += dailyScore;
                 
                 // Check if we can upgrade the glove
@@ -365,20 +338,14 @@ function calculateGloveProgression() {
                     totalScore: Math.round(totalScore),
                     zone: bestZone,
                     upgrade: upgrade ? true : false,
-                    quotaReached: maxQuota > 0 && actualMines < minesPerDay,
-                    actualMines: actualMines
+                    actualMines: minesPerDay
                 });
                 
                 // Apply upgrade if available
                 if (upgrade) {
                     currentGlove = upgrade.to;
                 }
-                
-                // Update remaining quota
-                if (maxQuota > 0) {
-                    remainingQuota -= actualMines;
-                }
-            }            // Update UI with results
+            }// Update UI with results
             updateUI(startingGlove, currentGlove, dailyResults);
             
             console.log('Calculation completed successfully');
@@ -420,16 +387,13 @@ function updateUI(startGlove, endGlove, dailyResults) {
     document.getElementById('totalMines').textContent = totalMines.toLocaleString();
     
     // Clear existing progress table
-    progressTableElement.innerHTML = '';
-      // Populate progress table
+    progressTableElement.innerHTML = '';    // Populate progress table
     dailyResults.forEach((result, index) => {
         const row = document.createElement('tr');
         
-        // Add highlight class if there was an upgrade or quota was reached
+        // Add highlight class if there was an upgrade
         if (result.upgrade) {
             row.classList.add('table-success');
-        } else if (result.quotaReached) {
-            row.classList.add('table-warning');
         }
         
         // Format zone name for display
@@ -441,17 +405,10 @@ function updateUI(startGlove, endGlove, dailyResults) {
             nextGloveDisplay = ` → ${dailyResults[index + 1].gloveType}`;
         }
         
-        // Show mines info if quota is active
-        let minesInfo = '';
-        if (result.hasOwnProperty('actualMines')) {
-            const minesPerDay = parseInt(minesPerDayInput.value, 10) || DEFAULT_MINES_PER_DAY;
-            minesInfo = `<span class="text-muted">(${result.actualMines}/${minesPerDay})</span>`;
-        }
-        
         row.innerHTML = `
             <td>${result.day}</td>
             <td>${result.gloveType}${result.upgrade ? nextGloveDisplay : ''}</td>
-            <td>${result.scoreGained.toLocaleString()} ${minesInfo}</td>
+            <td>${result.scoreGained.toLocaleString()}</td>
             <td>${result.totalScore.toLocaleString()}</td>
             <td>${zoneDisplay}</td>
         `;
@@ -532,14 +489,8 @@ function updateProgressChart(dailyResults) {
                                     nextGlove = endGloveElement.textContent;
                                 }
                                 return [`Score: ${scores[index].toLocaleString()}`, `Upgrade: ${prevGlove} → ${nextGlove}`];
-                            } else {
-                                // Regular score point
+                            } else {                                // Regular score point
                                 let info = [`Score: ${scores[index].toLocaleString()}`];
-                                
-                                // Add quota info if available
-                                if (dailyResults[index].quotaReached) {
-                                    info.push(`Quota limit reached`);
-                                }
                                 
                                 if (dailyResults[index].hasOwnProperty('actualMines')) {
                                     const minesPerDay = parseInt(minesPerDayInput.value, 10) || DEFAULT_MINES_PER_DAY;
@@ -564,15 +515,9 @@ function updateDailyScoreChart(dailyResults) {
     // Extract data for chart
     const days = dailyResults.map(result => `Day ${result.day}`);
     const dailyScores = dailyResults.map(result => result.scoreGained);
-    
-    // Create upgrade markers
+      // Create upgrade markers
     const upgradePoints = dailyResults.map((result, index) => 
         result.upgrade ? dailyScores[index] : null
-    );
-    
-    // Determine if quota was reached for each day
-    const quotaPoints = dailyResults.map((result, index) => 
-        result.quotaReached ? dailyScores[index] : null
     );
     
     // Destroy existing chart if it exists
@@ -595,16 +540,8 @@ function updateDailyScoreChart(dailyResults) {
                 },
                 {
                     label: 'Upgrade Days',
-                    data: upgradePoints,
-                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    data: upgradePoints,                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
                     borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Quota Limit',
-                    data: quotaPoints,
-                    backgroundColor: 'rgba(255, 205, 86, 0.6)',
-                    borderColor: 'rgba(255, 205, 86, 1)',
                     borderWidth: 1
                 }
             ]
@@ -643,14 +580,10 @@ function updateDailyScoreChart(dailyResults) {
                                 const prevGlove = dailyResults[index].gloveType;
                                 let nextGlove = '';
                                 if (index + 1 < dailyResults.length) {
-                                    nextGlove = dailyResults[index + 1].gloveType;
-                                } else {
+                                    nextGlove = dailyResults[index + 1].gloveType;                                } else {
                                     nextGlove = endGloveElement.textContent;
                                 }
                                 return [`Score: ${dailyScores[index].toLocaleString()}`, `Upgrade: ${prevGlove} → ${nextGlove}`];
-                            } else if (datasetIndex === 2 && quotaPoints[index] !== null) {
-                                // For quota limit days
-                                return [`Score: ${dailyScores[index].toLocaleString()}`, `Quota limit reached`];
                             }
                         }
                     }
@@ -666,20 +599,17 @@ function exportResultsToCSV(dailyResults) {
         alert('No data to export');
         return;
     }
-    
-    // Create CSV header
-    let csvContent = "Day,Glove Type,Score Gained,Total Score,Deposit Zone,Upgrade,Quota Reached,Mines Used\n";
+      // Create CSV header
+    let csvContent = "Day,Glove Type,Score Gained,Total Score,Deposit Zone,Upgrade,Mines Used\n";
     
     // Add data rows
-    dailyResults.forEach(result => {
-        const row = [
+    dailyResults.forEach(result => {        const row = [
             result.day,
             `"${result.gloveType}"`,
             result.scoreGained,
             result.totalScore,
             `"${result.zone}"`,
             result.upgrade ? 'Yes' : 'No',
-            result.quotaReached ? 'Yes' : 'No',
             result.actualMines || 0
         ];
         
@@ -705,7 +635,6 @@ calculateBtn.addEventListener('click', calculateGloveProgression);
 gloveTypeSelect.addEventListener('change', calculateGloveProgression);
 daysInput.addEventListener('change', calculateGloveProgression);
 minesPerDayInput.addEventListener('change', calculateGloveProgression);
-maxQuotaInput.addEventListener('change', calculateGloveProgression);
 
 // Add export button event listener
 document.getElementById('exportBtn').addEventListener('click', function() {
@@ -723,30 +652,29 @@ document.getElementById('exportBtn').addEventListener('click', function() {
     const upgradePoints = progressChart.data.datasets[1].data;
     
     for (let i = 0; i < days.length; i++) {
-        // Extract information from the table
-        const row = progressTable.children[i];
+        // Extract information from the table        const row = progressTable.children[i];
         const gloveType = row.children[1].innerText.split('→')[0].trim();
         const scoreGained = parseInt(row.children[2].innerText.replace(/,/g, ''));
         const totalScore = scores[i];
         const zone = row.children[4].innerText;
         const isUpgrade = upgradePoints[i] !== null;
-        const isQuotaReached = row.classList.contains('table-warning');
-        
-        // Extract mines used from the table cell text
+          // Extract mines used from the table cell text
         let actualMines = 0;
-        const minesMatch = row.children[2].innerText.match(/\((\d+)\/(\d+)\)/);
-        if (minesMatch && minesMatch.length > 1) {
-            actualMines = parseInt(minesMatch[1]);
+        if (row.children[2].innerText.includes('(')) {
+            const minesMatch = row.children[2].innerText.match(/\((\d+)\/(\d+)\)/);
+            if (minesMatch && minesMatch.length > 1) {
+                actualMines = parseInt(minesMatch[1]);
+            }
+        } else {
+            actualMines = parseInt(minesPerDayInput.value, 10) || DEFAULT_MINES_PER_DAY;
         }
-        
-        dailyResults.push({
+          dailyResults.push({
             day: days[i],
             gloveType,
             scoreGained,
             totalScore,
             zone,
             upgrade: isUpgrade,
-            quotaReached: isQuotaReached,
             actualMines
         });
     }
@@ -755,12 +683,10 @@ document.getElementById('exportBtn').addEventListener('click', function() {
 });
 
 // Initialize with default values and load data
-window.addEventListener('DOMContentLoaded', () => {
-    // Set default values
+window.addEventListener('DOMContentLoaded', () => {    // Set default values
     gloveTypeSelect.value = 'Glove Pick I (Normal)';
     daysInput.value = 7;
     minesPerDayInput.value = 10;
-    maxQuotaInput.value = 0;
     
     // Disable calculate button until data is loaded
     calculateBtn.disabled = true;

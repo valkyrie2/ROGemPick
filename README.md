@@ -6,14 +6,14 @@ A web-based calculator for ROGemPick event progression, helping players plan the
 
 - Select starting glove type
 - Input number of days to play the event
-- Configure mines per day and optional quota limits
+- Configure mines per day
 - View progression details:
   - Daily score acquisition
   - Glove upgrades over time
   - Best mining zones for each day
 - Interactive charts showing:
   - Total score progression and upgrade points
-  - Daily score gains with upgrade and quota indicators
+  - Daily score gains with upgrade indicators
 - Detailed table with daily progress information
 - Export results to CSV for further analysis
 - Calculate total mines used throughout the event
@@ -33,7 +33,7 @@ The application uses three JSON data files:
 3. When enough score is accumulated for an upgrade, it applies the upgrade immediately
 4. The process continues for the specified number of days
 5. Results are displayed in charts and a detailed table
-6. Color coding helps identify upgrade days (green) and quota limit days (yellow)
+6. Color coding helps identify upgrade days (green)
 
 ## Technologies Used
 
@@ -52,7 +52,7 @@ The application uses three JSON data files:
    ```
 2. Open `index.html` in your browser
 3. Select a starting glove type and number of days
-4. Configure mines per day and optional quota limits
+4. Configure mines per day
 5. Click "Calculate" to see the results
 6. Use the "Export Results" button to download the data as CSV
 

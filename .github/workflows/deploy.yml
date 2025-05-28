@@ -2,9 +2,9 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -28,17 +28,17 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload root artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '.'
-          name: 'root'
+      - name: Prepare publish folder
+        run: |
+          mkdir publish
+          cp -r ./* publish/
+          cp -r ./data/* publish/data/
+          rm -rf publish/.git publish/.github
 
-      - name: Upload data artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'data'
-          name: 'data'
+          path: 'publish'
 
       - name: Deploy to GitHub Pages
         id: deployment

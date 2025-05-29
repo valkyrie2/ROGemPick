@@ -395,6 +395,12 @@ function calculateGloveProgression() {
                 // Count tickets
                 const ticketsFound = upgradesInDay.tickets ? upgradesInDay.tickets.length : 0;
                 
+                // Calculate total tickets so far
+                const previousTotalTickets = dailyResults.length > 0 
+                    ? dailyResults[dailyResults.length - 1].totalTickets 
+                    : 0;
+                const totalTickets = previousTotalTickets + ticketsFound;
+                
                 dailyResults.push({
                     day,
                     gloveType: firstGloveOfDay,
@@ -406,7 +412,8 @@ function calculateGloveProgression() {
                     actualMines: minesPerDay,
                     finalGlove: lastGloveOfDay,
                     tickets: ticketsFound,
-                    ticketDetails: upgradesInDay.tickets || []
+                    ticketDetails: upgradesInDay.tickets || [],
+                    totalTickets: totalTickets
                 });
                 
                 // No need to apply upgrades at the end of the day, as we've already updated currentGlove during mining
@@ -524,8 +531,7 @@ function updateUI(startGlove, endGlove, dailyResults) {
             row.setAttribute('data-bs-html', 'true');
             row.setAttribute('title', tooltipContent);
         }
-        
-        // Format ticket display
+          // Format ticket display
         let ticketDisplay = result.tickets > 0 ? 
             `${result.tickets} <i class="bi bi-ticket-perforated-fill text-warning"></i>` : 
             '0';
@@ -537,6 +543,7 @@ function updateUI(startGlove, endGlove, dailyResults) {
             <td>${result.totalScore.toLocaleString()}</td>
             <td>${zoneDisplay}</td>
             <td>${ticketDisplay}</td>
+            <td>${result.totalTickets}</td>
         `;
         
         progressTableElement.appendChild(row);
@@ -853,11 +860,242 @@ function exportResultsToCSV(dailyResults) {
     document.body.removeChild(link);
 }
 
+// Function to run multiple simulations and calculate average results
+async function runMultipleSimulations(numberOfRuns = 50) {
+    // Show loading spinner
+    document.getElementById('spinner-overlay').style.display = 'flex';
+    document.getElementById('spinner-overlay').querySelector('p').textContent = `Running ${numberOfRuns} Simulations...`;
+    
+    // Use setTimeout to allow UI to update before starting simulations
+    setTimeout(async () => {
+        try {
+            const startingGlove = gloveTypeSelect.value;
+            const days = parseInt(daysInput.value, 10);
+            const minesPerDay = parseInt(minesPerDayInput.value, 10) || DEFAULT_MINES_PER_DAY;
+            
+            console.log(`Starting ${numberOfRuns} simulations with:`, { startingGlove, days, minesPerDay });
+            
+            // Store results from all simulations
+            const allResults = [];
+            
+            // Run simulations
+            for (let i = 0; i < numberOfRuns; i++) {
+                // Update spinner text to show progress
+                document.getElementById('spinner-overlay').querySelector('p').textContent = 
+                    `Running Simulation ${i+1}/${numberOfRuns}...`;
+                
+                // Run a single simulation
+                const result = await runSingleSimulation(startingGlove, days, minesPerDay);
+                allResults.push(result);
+                
+                // Small delay to allow UI updates
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+            
+            // Process and display results
+            processSimulationResults(allResults);
+            
+            // Hide loading spinner
+            document.getElementById('spinner-overlay').style.display = 'none';
+            
+        } catch (error) {
+            console.error('Simulation error:', error);
+            alert('An error occurred during simulation: ' + error.message);
+            document.getElementById('spinner-overlay').style.display = 'none';
+        }
+    }, 100);
+}
+
+// Function to run a single simulation
+async function runSingleSimulation(startingGlove, days, minesPerDay) {
+    // Create a copy of the starting values to avoid interference with UI
+    let currentGlove = startingGlove;
+    let totalScore = 0;
+    let dailyResults = [];
+    
+    // Calculate progression for each day
+    for (let day = 1; day <= days; day++) {
+        // Find the best deposit zone for current total score
+        const bestZone = findBestDepositZone(totalScore);
+        
+        // Simulate actual mining operations for this day
+        let dailyScore = 0;
+        let upgradesInDay = [];
+        
+        // We'll check for upgrades after each mining operation
+        for (let i = 0; i < minesPerDay; i++) {
+            // Perform a single mining operation
+            const miningResult = performMining(currentGlove, bestZone);
+            dailyScore += miningResult.score;
+            totalScore += miningResult.score;
+            
+            // Track tickets found during mining
+            if (miningResult.hasTicket) {
+                // Initialize ticket tracking if not already done
+                if (!upgradesInDay.tickets) {
+                    upgradesInDay.tickets = [];
+                }
+                
+                upgradesInDay.tickets.push({
+                    mineNumber: i + 1,
+                    ticketName: miningResult.ticketName,
+                    rarity: miningResult.rarity
+                });
+            }
+            
+            // Check if we can upgrade after this mining operation
+            let keepUpgrading = true;
+            let tempCurrentGlove = currentGlove;
+            
+            while (keepUpgrading) {
+                const upgrade = findNextUpgrade(tempCurrentGlove, totalScore, startingGlove);
+                
+                if (upgrade) {
+                    upgradesInDay.push({
+                        from: tempCurrentGlove,
+                        to: upgrade.to,
+                        afterMineNumber: i + 1,
+                        totalScore: Math.round(totalScore)
+                    });
+                    
+                    // Update current glove for future mining operations
+                    tempCurrentGlove = upgrade.to;
+                    currentGlove = upgrade.to;
+                } else {
+                    keepUpgrading = false;
+                }
+            }
+        }
+        
+        // Count tickets
+        const ticketsFound = upgradesInDay.tickets ? upgradesInDay.tickets.length : 0;
+        
+        // Calculate total tickets so far
+        const previousTotalTickets = dailyResults.length > 0 
+            ? dailyResults[dailyResults.length - 1].totalTickets 
+            : 0;
+        const totalTickets = previousTotalTickets + ticketsFound;
+        
+        // Store daily results - capturing all glove changes
+        dailyResults.push({
+            day,
+            gloveType: currentGlove,
+            scoreGained: Math.round(dailyScore),
+            totalScore: Math.round(totalScore),
+            tickets: ticketsFound,
+            totalTickets: totalTickets,
+            upgradeCount: upgradesInDay.length
+        });
+    }
+    
+    // Return final simulation results
+    return {
+        startGlove: startingGlove,
+        endGlove: currentGlove,
+        finalScore: Math.round(totalScore),
+        totalUpgrades: dailyResults.reduce((total, day) => total + day.upgradeCount, 0),
+        totalTickets: dailyResults.length > 0 ? dailyResults[dailyResults.length - 1].totalTickets : 0,
+        dailyResults: dailyResults
+    };
+}
+
+// Function to process and display simulation results
+function processSimulationResults(allResults) {
+    console.log(`Processing ${allResults.length} simulation results`);
+    
+    // Calculate statistics
+    const stats = {
+        finalScore: calculateStats(allResults.map(r => r.finalScore)),
+        totalUpgrades: calculateStats(allResults.map(r => r.totalUpgrades)),
+        totalTickets: calculateStats(allResults.map(r => r.totalTickets)),
+        endGloves: {}
+    };
+    
+    // Count occurrences of each end glove type
+    allResults.forEach(result => {
+        if (!stats.endGloves[result.endGlove]) {
+            stats.endGloves[result.endGlove] = 0;
+        }
+        stats.endGloves[result.endGlove]++;
+    });
+    
+    // Sort end gloves by frequency
+    const sortedEndGloves = Object.entries(stats.endGloves)
+        .sort((a, b) => b[1] - a[1])
+        .map(([glove, count]) => ({
+            glove,
+            count,
+            percentage: (count / allResults.length * 100).toFixed(1) + '%'
+        }));
+    
+    // Find most common end glove
+    const mostCommonEndGlove = sortedEndGloves.length > 0 ? sortedEndGloves[0] : null;
+    
+    // Display results in the simulation summary table
+    const summaryTable = document.getElementById('simulationSummaryTable');
+    summaryTable.innerHTML = '';
+    
+    // Add rows for each metric
+    addSimulationRow(summaryTable, 'Final Score', stats.finalScore);
+    addSimulationRow(summaryTable, 'Total Upgrades', stats.totalUpgrades);
+    addSimulationRow(summaryTable, 'Total Tickets', stats.totalTickets);
+    
+    // Add most common end glove
+    if (mostCommonEndGlove) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>Most Common End Glove</td>
+            <td colspan="3">${mostCommonEndGlove.glove} (${mostCommonEndGlove.percentage})</td>
+        `;
+        summaryTable.appendChild(row);
+    }
+    
+    // Add all end gloves
+    const endGlovesRow = document.createElement('tr');
+    endGlovesRow.innerHTML = `
+        <td>End Glove Distribution</td>
+        <td colspan="3">
+            ${sortedEndGloves.map(g => `${g.glove}: ${g.count} (${g.percentage})`).join('<br>')}
+        </td>
+    `;
+    summaryTable.appendChild(endGlovesRow);
+    
+    // Show the simulation summary container
+    document.getElementById('simulationSummaryContainer').style.display = 'block';
+}
+
+// Helper function to calculate statistics (avg, min, max)
+function calculateStats(values) {
+    const sum = values.reduce((a, b) => a + b, 0);
+    const avg = sum / values.length;
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    
+    return { avg, min, max };
+}
+
+// Helper function to add a row to the simulation summary table
+function addSimulationRow(table, metricName, stats) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${metricName}</td>
+        <td>${Math.round(stats.avg).toLocaleString()}</td>
+        <td>${stats.min.toLocaleString()}</td>
+        <td>${stats.max.toLocaleString()}</td>
+    `;
+    table.appendChild(row);
+}
+
 // Event listeners
 calculateBtn.addEventListener('click', calculateGloveProgression);
 gloveTypeSelect.addEventListener('change', calculateGloveProgression);
 daysInput.addEventListener('change', calculateGloveProgression);
 minesPerDayInput.addEventListener('change', calculateGloveProgression);
+
+// Add simulation button event listener
+document.getElementById('simulateBtn').addEventListener('click', function() {
+    runMultipleSimulations(50);
+});
 
 // Add export button event listener
 document.getElementById('exportBtn').addEventListener('click', function() {

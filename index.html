@@ -39,6 +39,7 @@
         </div>        <div class="row mb-3">
             <div class="col-12">
                 <button class="btn btn-primary" id="calculateBtn">Calculate</button>
+                <button class="btn btn-info ms-2" id="simulateBtn">Run 50 Simulations</button>
             </div>
         </div>
           <div class="row mb-4">
@@ -119,13 +120,13 @@
                         </div><div class="table-responsive">
                             <table class="table table-bordered">
                                 <thead>
-                                    <tr>
-                                        <th>Day</th>
+                                    <tr>                                        <th>Day</th>
                                         <th>Glove Type</th>
                                         <th>Score Gained</th>
                                         <th>Total Score</th>
                                         <th>Deposit Zone</th>
                                         <th>Tickets</th>
+                                        <th>Total Tickets</th>
                                     </tr>
                                 </thead>
                                 <tbody id="progressTable">
@@ -133,10 +134,41 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>                </div>
+            </div>
+        </div>    </div>
+
+    <!-- Simulation Summary Container -->
+    <div id="simulationSummaryContainer" class="container mt-5" style="display: none;">
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Simulation Results (50 Runs)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>Average</th>
+                                        <th>Minimum</th>
+                                        <th>Maximum</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="simulationSummaryTable">
+                                    <!-- Will be filled by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>    </div>    <footer class="bg-light text-center py-3 mt-5">
+        </div>
+    </div>
+
+    <footer class="bg-light text-center py-3 mt-5">
         <p>ROGemPick Calculator &copy; 2025 | <a href="https://github.com/YourUsername/ROGemPick" target="_blank">View on GitHub</a></p>
         <p class="small text-muted mt-2">Created to help RO players optimize their GemPick event strategy</p>
     </footer>
